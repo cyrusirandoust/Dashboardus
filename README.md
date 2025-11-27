@@ -202,10 +202,8 @@ npm install
      - `ManagedTenants.Read.All`
      - `DeviceManagementManagedDevices.Read.All`
      - `SecurityIncident.Read.All`
+     - `PartnerSecurity.Read.All`
      - `offline_access`
-     - `openid`
-     - `profile`
-     - `email`
 
 4. **Grant admin consent** for your organization
 
