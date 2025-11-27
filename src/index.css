@@ -1,0 +1,315 @@
+/**
+ * Global Styles
+ * 
+ * Tailwind CSS directives and global styles for the MSP Dashboard.
+ * Optimized for dark theme and large 4K displays.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   Base Styles
+   ============================================================================ */
+
+@layer base {
+  /* Root element */
+  :root {
+    /* Custom properties for dynamic theming */
+    --color-background: #0f172a;
+    --color-background-card: #1e293b;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+  }
+
+  /* Body */
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-text-primary font-semibold;
+  }
+
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  /* Links */
+  a {
+    @apply text-blue-400 hover:text-blue-300 transition-colors;
+  }
+
+  /* Code */
+  code {
+    @apply bg-background-card px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  /* Scrollbar styling for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-lg hover:bg-border-light;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #0f172a;
+  }
+}
+
+/* ============================================================================
+   Component Styles
+   ============================================================================ */
+
+@layer components {
+  /* Card component */
+  .card {
+    @apply bg-background-card border border-border rounded-lg p-4 shadow-lg;
+  }
+
+  .card-hover {
+    @apply card hover:border-border-light transition-all duration-200 cursor-pointer;
+  }
+
+  /* Button variants */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-background-card text-text-primary border border-border hover:bg-background-hover focus:ring-blue-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-text-secondary hover:bg-background-card hover:text-text-primary;
+  }
+
+  /* Badge component */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-3 py-2 bg-background-card border border-border rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  /* Table styles */
+  .table {
+    @apply w-full border-collapse;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider border-b border-border bg-background-card;
+  }
+
+  .table td {
+    @apply px-4 py-3 text-sm text-text-primary border-b border-border;
+  }
+
+  .table tr:hover td {
+    @apply bg-background-hover;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-border border-t-blue-500;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply animate-pulse bg-background-card rounded;
+  }
+}
+
+/* ============================================================================
+   Utility Classes
+   ============================================================================ */
+
+@layer utilities {
+  /* Text truncation */
+  .truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-background-card/80 backdrop-blur-lg border border-border/50;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent;
+  }
+
+  /* Focus visible (for accessibility) */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-in-top {
+  animation: slideInFromTop 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .card {
+    @apply border-gray-300;
+  }
+}
+
+/* ============================================================================
+   Accessibility
+   ============================================================================ */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-background: #000000;
+    --color-background-card: #1a1a1a;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #cccccc;
+  }
+
+  .border {
+    @apply border-2;
+  }
+}
+
+/* Made with Bob */
