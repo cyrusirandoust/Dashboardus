@@ -39,13 +39,14 @@ Dashboardus sets a new standard for secure MSP dashboards. Here's how we achieve
 ### 2. **Delegated Permissions Only** 👤
 - **User-context authentication**: All API calls are made with the signed-in user's permissions
 - **No app-only permissions**: The dashboard cannot perform actions beyond what the MSP technician is authorized to do
-- **Principle of least privilege**: Requests only the minimum required Microsoft Graph scopes:
-  - `User.Read` - Basic profile information
-  - `ManagedTenants.Read.All` - Read-only access to Lighthouse data
-  - `DeviceManagementManagedDevices.Read.All` - Read-only device compliance
-  - `SecurityIncident.Read.All` - Read-only security incidents
-  - `PartnerSecurity.Read.All` - Read partner security information
-  - `offline_access` - Enable refresh tokens for silent token renewal
+- **Comprehensive M365 E5 coverage**: Supports full security monitoring across Microsoft's security stack:
+  - **Core**: `User.Read`, `ManagedTenants.Read.All`, `offline_access`
+  - **Device Management**: `DeviceManagementManagedDevices.Read.All`
+  - **Security (M365 E5)**: `SecurityIncident.Read.All`, `SecurityAlert.Read.All`, `SecurityEvents.Read.All`, `ThreatIndicators.Read.All`
+  - **Identity Protection (Entra P2)**: `IdentityRiskEvent.Read.All`, `IdentityRiskyUser.Read.All`
+  - **Compliance**: `Policy.Read.All`, `Directory.Read.All`, `AuditLog.Read.All`, `InformationProtectionPolicy.Read`
+
+**Note**: The dashboard gracefully handles missing permissions. Not all permissions are required for basic functionality.
 
 ### 3. **GDAP & Lighthouse Integration** 🌐
 - **Granular Delegated Admin Privileges (GDAP)**: Leverages Microsoft's modern GDAP model for customer tenant access
@@ -126,8 +127,9 @@ Dashboardus leverages the best of Microsoft's cloud platform and modern web tech
 
 ## 🗺️ Roadmap & Future Phases
 
-### Phase 2: Enhanced Security & Monitoring (Q1 2026)
-- [ ] **Security incidents integration** (when available via Lighthouse)
+### Phase 2: Enhanced Security & Monitoring (Q2 2026)
+- [ ] **Security incidents per-tenant** (Lighthouse doesn't support multi-tenant incidents API)
+- [ ] **Security alerts aggregation** across all tenants
 - [ ] **Auto-refresh with configurable intervals**
 - [ ] **Live mode** for real-time SOC monitoring
 - [ ] **PII anonymization toggle** for GDPR compliance
@@ -198,12 +200,22 @@ npm install
 
 3. **Configure API permissions** (Delegated only):
    - Microsoft Graph:
-     - `User.Read`
-     - `ManagedTenants.Read.All`
-     - `DeviceManagementManagedDevices.Read.All`
-     - `SecurityIncident.Read.All`
-     - `PartnerSecurity.Read.All`
-     - `offline_access`
+     - `User.Read` - Basic user profile
+     - `ManagedTenants.Read.All` - Lighthouse multi-tenant data
+     - `DeviceManagementManagedDevices.Read.All` - Device compliance
+     - `SecurityIncident.Read.All` - Security incidents (M365 E5)
+     - `SecurityAlert.Read.All` - Security alerts (M365 E5)
+     - `SecurityEvents.Read.All` - Security events (M365 E5)
+     - `ThreatIndicators.Read.All` - Threat intelligence (M365 E5)
+     - `IdentityRiskEvent.Read.All` - Identity risk events (Entra P2)
+     - `IdentityRiskyUser.Read.All` - Risky users (Entra P2)
+     - `Policy.Read.All` - Conditional Access policies
+     - `Directory.Read.All` - Directory data
+     - `AuditLog.Read.All` - Audit logs
+     - `InformationProtectionPolicy.Read` - Purview policies
+     - `offline_access` - Refresh tokens
+
+   **Note**: Some permissions require Microsoft 365 E5 or Entra ID P2 licenses. The dashboard will gracefully handle missing permissions.
 
 4. **Grant admin consent** for your organization
 

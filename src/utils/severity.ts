@@ -101,18 +101,21 @@ export function getSeverityTextColor(severity: IncidentSeverity): string {
  * @returns Tailwind color class
  */
 export function getComplianceColor(state: ComplianceState): string {
-  switch (state) {
+  // Handle both lowercase and capitalized values from API
+  const normalizedState = state?.toLowerCase();
+  
+  switch (normalizedState) {
     case 'compliant':
       return 'text-severity-healthy bg-severity-healthy/10 border-severity-healthy';
     case 'noncompliant':
       return 'text-severity-high bg-severity-high/10 border-severity-high';
-    case 'inGracePeriod':
+    case 'ingraceperiod':
       return 'text-severity-medium bg-severity-medium/10 border-severity-medium';
     case 'error':
       return 'text-red-600 bg-red-600/10 border-red-600';
     case 'unknown':
-    case 'notApplicable':
-    case 'configManager':
+    case 'notapplicable':
+    case 'configmanager':
       return 'text-gray-500 bg-gray-500/10 border-gray-500';
     default:
       return 'text-gray-500 bg-gray-500/10 border-gray-500';
@@ -173,23 +176,26 @@ export function getSeverityLabel(severity: IncidentSeverity): string {
  * @returns Human-readable label
  */
 export function getComplianceLabel(state: ComplianceState): string {
-  switch (state) {
+  // Handle both lowercase and capitalized values from API
+  const normalizedState = state?.toLowerCase();
+  
+  switch (normalizedState) {
     case 'compliant':
       return 'Compliant';
     case 'noncompliant':
       return 'Non-Compliant';
-    case 'inGracePeriod':
+    case 'ingraceperiod':
       return 'In Grace Period';
     case 'error':
       return 'Error';
     case 'unknown':
       return 'Unknown';
-    case 'notApplicable':
+    case 'notapplicable':
       return 'Not Applicable';
-    case 'configManager':
+    case 'configmanager':
       return 'Config Manager';
     default:
-      return 'Unknown';
+      return state || 'Unknown';
   }
 }
 

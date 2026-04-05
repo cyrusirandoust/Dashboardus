@@ -28,11 +28,36 @@ const PORTALS = {
 
 /**
  * Generate deep link to a specific device in Intune admin center.
+ *
+ * IMPORTANT FOR MSPs: This link goes directly to Intune and requires
+ * direct tenant access. For Lighthouse users, use getLighthouseDeviceLink() instead.
+ *
  * @param deviceId - The managed device ID
  * @returns URL to device details page
  */
 export function getIntuneDeviceLink(deviceId: string): string {
   return `${PORTALS.intune}/#view/Microsoft_Intune_Devices/DeviceSettingsMenuBlade/~/overview/mdmDeviceId/${deviceId}`;
+}
+
+/**
+ * Generate deep link to device compliance page in Lighthouse portal filtered to specific tenant.
+ * This is the recommended link for MSPs as it works across all managed tenants.
+ *
+ * Based on actual Lighthouse URL format:
+ * https://lighthouse.microsoft.com/#view/Microsoft_Intune_MTM/DeviceCompliance.ReactView/defaultKey/devices/initialCustomer~/%7B%22key%22%3A%22{tenantId}%22%2C%22text%22%3A%22{tenantName}%22%7D
+ *
+ * @param tenantId - The customer tenant ID
+ * @param tenantName - The customer tenant display name
+ * @returns URL to device compliance page in Lighthouse filtered to this tenant
+ */
+export function getLighthouseDeviceLink(tenantId: string, tenantName: string): string {
+  // Encode the tenant info as JSON for Lighthouse URL format
+  const customerParam = encodeURIComponent(JSON.stringify({
+    key: tenantId,
+    text: tenantName
+  }));
+  
+  return `${PORTALS.lighthouse}/#view/Microsoft_Intune_MTM/DeviceCompliance.ReactView/defaultKey/devices/initialCustomer~/${customerParam}`;
 }
 
 /**
@@ -251,6 +276,7 @@ export const deepLinks = {
     tenants: getLighthouseTenantsLink,
     deviceCompliance: getLighthouseDeviceComplianceLink,
     security: getLighthouseSecurityLink,
+    device: getLighthouseDeviceLink, // MSP-friendly device link
   },
   admin: {
     tenantAdminCenter: getTenantAdminCenterLink,

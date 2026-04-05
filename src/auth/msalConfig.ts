@@ -104,11 +104,42 @@ export const msalConfig: Configuration = {
  */
 export const loginRequest: RedirectRequest = {
   scopes: [
+    // Basic profile
     'https://graph.microsoft.com/User.Read',
+    
+    // Microsoft 365 Lighthouse (MSP multi-tenant)
     'https://graph.microsoft.com/ManagedTenants.Read.All',
+    
+    // Intune Device Management
     'https://graph.microsoft.com/DeviceManagementManagedDevices.Read.All',
+    'https://graph.microsoft.com/DeviceManagementConfiguration.Read.All',
+    
+    // Microsoft Defender XDR (Security Incidents & Alerts)
     'https://graph.microsoft.com/SecurityIncident.Read.All',
+    'https://graph.microsoft.com/SecurityAlert.Read.All',
+    'https://graph.microsoft.com/SecurityEvents.Read.All',
+    'https://graph.microsoft.com/ThreatIndicators.Read.All',
+    
+    // Microsoft Defender for Endpoint
+    'https://graph.microsoft.com/SecurityActions.Read.All',
+    
+    // Microsoft Purview (Compliance & DLP)
+    'https://graph.microsoft.com/InformationProtectionPolicy.Read',
+    // Note: ThreatAssessment.Read.All doesn't exist, only ReadWrite version
+    
+    // Microsoft Entra ID (Identity & Access)
+    'https://graph.microsoft.com/Directory.Read.All',
+    'https://graph.microsoft.com/AuditLog.Read.All',
+    'https://graph.microsoft.com/IdentityRiskEvent.Read.All',
+    'https://graph.microsoft.com/IdentityRiskyUser.Read.All',
+    
+    // Microsoft Sentinel (via Security Graph)
+    'https://graph.microsoft.com/SecurityAnalyzedMessage.Read.All',
+    
+    // Partner/MSP specific
     'https://graph.microsoft.com/PartnerSecurity.Read.All',
+    
+    // Token refresh
     'offline_access',
   ],
   prompt: 'select_account', // Allow user to select account
@@ -153,12 +184,97 @@ export const scopeDefinitions = {
     category: 'Intune',
     documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#devicemanagementmanageddevicesreadall',
   },
+  'DeviceManagementConfiguration.Read.All': {
+    name: 'DeviceManagementConfiguration.Read.All',
+    description: 'Read Intune device configuration and policies',
+    required: true,
+    category: 'Intune',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#devicemanagementconfigurationreadall',
+  },
   'SecurityIncident.Read.All': {
     name: 'SecurityIncident.Read.All',
-    description: 'Read security incidents from Microsoft Defender',
+    description: 'Read security incidents from Microsoft Defender XDR',
     required: true,
-    category: 'Security',
+    category: 'Defender XDR',
     documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#securityincidentreadall',
+  },
+  'SecurityAlert.Read.All': {
+    name: 'SecurityAlert.Read.All',
+    description: 'Read security alerts from Microsoft Defender',
+    required: true,
+    category: 'Defender XDR',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#securityalertreadall',
+  },
+  'SecurityEvents.Read.All': {
+    name: 'SecurityEvents.Read.All',
+    description: 'Read security events from Microsoft Defender',
+    required: true,
+    category: 'Defender XDR',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#securityeventsreadall',
+  },
+  'ThreatIndicators.Read.All': {
+    name: 'ThreatIndicators.Read.All',
+    description: 'Read threat intelligence indicators',
+    required: true,
+    category: 'Defender XDR',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#threatindicatorsreadall',
+  },
+  'SecurityActions.Read.All': {
+    name: 'SecurityActions.Read.All',
+    description: 'Read security actions from Microsoft Defender for Endpoint',
+    required: true,
+    category: 'Defender for Endpoint',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#securityactionsreadall',
+  },
+  'InformationProtectionPolicy.Read': {
+    name: 'InformationProtectionPolicy.Read',
+    description: 'Read information protection policies from Microsoft Purview',
+    required: true,
+    category: 'Purview',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#informationprotectionpolicyread',
+  },
+  // Note: ThreatAssessment.Read.All doesn't exist - only ThreatAssessment.ReadWrite.All is available
+  'Directory.Read.All': {
+    name: 'Directory.Read.All',
+    description: 'Read directory data from Microsoft Entra ID',
+    required: true,
+    category: 'Entra ID',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#directoryreadall',
+  },
+  'AuditLog.Read.All': {
+    name: 'AuditLog.Read.All',
+    description: 'Read audit logs from Microsoft Entra ID',
+    required: true,
+    category: 'Entra ID',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#auditlogreadall',
+  },
+  'IdentityRiskEvent.Read.All': {
+    name: 'IdentityRiskEvent.Read.All',
+    description: 'Read identity risk events from Entra ID Protection',
+    required: true,
+    category: 'Entra ID Protection',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#identityriskeventreadall',
+  },
+  'IdentityRiskyUser.Read.All': {
+    name: 'IdentityRiskyUser.Read.All',
+    description: 'Read risky user information from Entra ID Protection',
+    required: true,
+    category: 'Entra ID Protection',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#identityriskyuserreadall',
+  },
+  'SecurityAnalyzedMessage.Read.All': {
+    name: 'SecurityAnalyzedMessage.Read.All',
+    description: 'Read analyzed messages from Microsoft Sentinel',
+    required: true,
+    category: 'Sentinel',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#securityanalyzedmessagereadall',
+  },
+  'PartnerSecurity.Read.All': {
+    name: 'PartnerSecurity.Read.All',
+    description: 'Read partner security information',
+    required: true,
+    category: 'Partner/MSP',
+    documentation: 'https://learn.microsoft.com/en-us/graph/permissions-reference#partnersecurityreadall',
   },
   'offline_access': {
     name: 'offline_access',

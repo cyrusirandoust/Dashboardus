@@ -10,7 +10,7 @@ import { useAuth } from './auth/AuthProvider';
 import { useDashboardData } from './hooks/useDashboardData';
 import { formatDateTime, formatRelativeTime } from './utils/dateTime';
 import { getSeverityColor, getComplianceColor, getSeverityLabel, getComplianceLabel } from './utils/severity';
-import { getIntuneDeviceLink, getDefenderIncidentLink, getEntraUserLink } from './utils/deepLinks';
+import { getLighthouseDeviceLink, getDefenderIncidentLink, getEntraUserLink } from './utils/deepLinks';
 import { ExternalLink, RefreshCw, AlertTriangle, Shield, Server, Activity, Filter } from 'lucide-react';
 
 function App() {
@@ -203,7 +203,7 @@ function Dashboard({ account, onLogout }: { account: any; onLogout: () => void }
                             : 'bg-background-card text-text-secondary hover:bg-background-hover border border-border'
                         }`}
                       >
-                        Non-Compliant Only ({devices.filter(d => d.complianceStatus === 'noncompliant').length})
+                        Non-Compliant Only ({devices.filter(d => d.complianceStatus?.toLowerCase() === 'noncompliant').length})
                       </button>
                     </div>
 
@@ -237,7 +237,7 @@ function Dashboard({ account, onLogout }: { account: any; onLogout: () => void }
               </div>
               <DeviceTable
                 devices={devices
-                  .filter(d => showAllDevices || d.complianceStatus === 'noncompliant')
+                  .filter(d => showAllDevices || d.complianceStatus?.toLowerCase() === 'noncompliant')
                   .filter(d => selectedTenant === 'all' || d.tenantId === selectedTenant)
                 }
               />
@@ -329,10 +329,11 @@ function DeviceTable({ devices }: { devices: any[] }) {
               <td className="text-text-secondary text-sm">{formatRelativeTime(device.lastSyncDateTime)}</td>
               <td>
                 <a
-                  href={getIntuneDeviceLink(device.managedDeviceId)}
+                  href={getLighthouseDeviceLink(device.tenantId, device.tenantDisplayName || device.organizationDisplayName)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
+                  title="View devices in Lighthouse for this tenant"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>

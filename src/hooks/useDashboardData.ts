@@ -51,21 +51,19 @@ export function useDashboardData(): DashboardData {
 
       console.info('[Dashboard] Fetching dashboard data...');
 
-      // Fetch tenants, devices, and security incidents
-      const [tenantsResult, devicesResult, incidentsResult] = await Promise.allSettled([
+      // Fetch tenants and devices
+      // NOTE: Security incidents API doesn't work through Lighthouse yet
+      // Microsoft doesn't provide a multi-tenant security incidents endpoint via Lighthouse
+      // The /security/incidents endpoint only works for the current tenant, not across managed tenants
+      const [tenantsResult, devicesResult] = await Promise.allSettled([
         getManagedTenants(graphClient),
         getManagedDeviceCompliance(graphClient),
-        getSecurityIncidents(graphClient, {
-          status: ['active', 'inProgress'],
-          timeRange: 'last30d',
-          top: 100
-        }),
       ]);
 
       // Extract successful results
       const tenantsData = tenantsResult.status === 'fulfilled' ? tenantsResult.value : [];
       const devicesData = devicesResult.status === 'fulfilled' ? devicesResult.value : [];
-      const incidentsData = incidentsResult.status === 'fulfilled' ? incidentsResult.value : [];
+      const incidentsData: any[] = []; // Disabled until Lighthouse supports multi-tenant incidents
 
       // Log any failures
       if (tenantsResult.status === 'rejected') {
@@ -76,10 +74,8 @@ export function useDashboardData(): DashboardData {
         console.error('[Dashboard] Failed to fetch devices:', devicesResult.reason);
         setError('Failed to fetch device compliance from Lighthouse');
       }
-      if (incidentsResult.status === 'rejected') {
-        console.warn('[Dashboard] Failed to fetch security incidents:', incidentsResult.reason);
-        // Don't set error for incidents - they're optional
-      }
+      // Security incidents disabled - Lighthouse doesn't support multi-tenant incidents yet
+      console.info('[Dashboard] Security incidents disabled - not supported by Lighthouse API yet');
 
       // Mark new incidents
       const markedIncidents = markNewIncidents(incidentsData, previousIncidents);
@@ -138,10 +134,10 @@ export function useDashboardData(): DashboardData {
     },
     devices: {
       total: devices.length,
-      compliant: devices.filter(d => d.complianceStatus === 'compliant').length,
-      nonCompliant: devices.filter(d => d.complianceStatus === 'noncompliant').length,
+      compliant: devices.filter(d => d.complianceStatus?.toLowerCase() === 'compliant').length,
+      nonCompliant: devices.filter(d => d.complianceStatus?.toLowerCase() === 'noncompliant').length,
       compliancePercentage: devices.length > 0
-        ? Math.round((devices.filter(d => d.complianceStatus === 'compliant').length / devices.length) * 100)
+        ? Math.round((devices.filter(d => d.complianceStatus?.toLowerCase() === 'compliant').length / devices.length) * 100)
         : 0,
     },
     incidents: {

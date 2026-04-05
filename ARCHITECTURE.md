@@ -383,13 +383,33 @@ const loginRequest = {
 **Permission Scopes**:
 ```typescript
 const scopes = [
+  // Core permissions
   'User.Read',                                  // Basic profile
   'ManagedTenants.Read.All',                    // Lighthouse data
-  'DeviceManagementManagedDevices.Read.All',    // Device compliance
-  'SecurityIncident.Read.All',                  // Security incidents
   'offline_access',                             // Refresh tokens
+  
+  // Device management
+  'DeviceManagementManagedDevices.Read.All',    // Device compliance
+  
+  // Security (M365 E5)
+  'SecurityIncident.Read.All',                  // Security incidents
+  'SecurityAlert.Read.All',                     // Security alerts
+  'SecurityEvents.Read.All',                    // Security events
+  'ThreatIndicators.Read.All',                  // Threat intelligence
+  
+  // Identity Protection (Entra P2)
+  'IdentityRiskEvent.Read.All',                 // Risk events
+  'IdentityRiskyUser.Read.All',                 // Risky users
+  
+  // Compliance & Governance
+  'Policy.Read.All',                            // Conditional Access
+  'Directory.Read.All',                         // Directory data
+  'AuditLog.Read.All',                          // Audit logs
+  'InformationProtectionPolicy.Read',           // Purview policies
 ];
 ```
+
+**Note**: Not all permissions are required for basic functionality. The dashboard gracefully handles missing permissions and will display available data based on granted scopes.
 
 #### GDAP Integration
 
