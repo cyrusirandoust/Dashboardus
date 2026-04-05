@@ -208,21 +208,39 @@ export async function getManagedDeviceCompliance(
     if (hasLighthouse) {
       console.info('[Lighthouse] Fetching device compliance from Lighthouse...');
       
+      let allDevices: ManagedDeviceCompliance[] = [];
+      let nextLink: string | undefined;
+      
+      // Initial request
       let request = graphClient
         .api('/tenantRelationships/managedTenants/managedDeviceCompliances')
         .version('beta')
-        .top(1000);
+        .top(999); // Use 999 to stay under limits
 
       if (filter) {
         request = request.filter(filter);
       }
 
-      const response: LighthouseApiResponse<ManagedDeviceCompliance> = await retryWithBackoff(() =>
+      // Fetch first page
+      let response: LighthouseApiResponse<ManagedDeviceCompliance> = await retryWithBackoff(() =>
         request.get()
       );
+      
+      allDevices = allDevices.concat(response.value);
+      nextLink = response['@odata.nextLink'];
 
-      console.info(`[Lighthouse] Found ${response.value.length} device compliance records`);
-      return response.value;
+      // Fetch remaining pages if any
+      while (nextLink) {
+        console.info(`[Lighthouse] Fetching next page of devices...`);
+        response = await retryWithBackoff(() =>
+          graphClient.api(nextLink).get()
+        );
+        allDevices = allDevices.concat(response.value);
+        nextLink = response['@odata.nextLink'];
+      }
+
+      console.info(`[Lighthouse] Found ${allDevices.length} device compliance records (across all pages)`);
+      return allDevices;
     } else {
       // Fallback: Get devices from current tenant's Intune
       const tenants = await getCurrentTenantAsManagedTenant(graphClient);

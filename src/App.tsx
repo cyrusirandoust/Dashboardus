@@ -215,11 +215,14 @@ function Dashboard({ account, onLogout }: { account: any; onLogout: () => void }
                         className="px-3 py-1 rounded text-sm bg-background-card text-text-secondary border border-border hover:bg-background-hover transition-colors"
                       >
                         <option value="all">All Tenants ({tenants.length})</option>
-                        {tenants.map(tenant => (
-                          <option key={tenant.id} value={tenant.id}>
-                            {tenant.displayName} ({devices.filter(d => d.tenantId === tenant.id).length} devices)
-                          </option>
-                        ))}
+                        {tenants.map(tenant => {
+                          const tenantDeviceCount = devices.filter(d => d.tenantId === tenant.tenantId).length;
+                          return (
+                            <option key={tenant.id} value={tenant.tenantId}>
+                              {tenant.displayName} ({tenantDeviceCount} devices)
+                            </option>
+                          );
+                        })}
                       </select>
                     )}
                   </div>
@@ -312,7 +315,7 @@ function DeviceTable({ devices }: { devices: any[] }) {
           </tr>
         </thead>
         <tbody>
-          {devices.slice(0, 20).map((device) => (
+          {devices.map((device) => (
             <tr key={device.id}>
               <td className="font-medium">{device.managedDeviceName}</td>
               <td className="text-text-secondary text-sm">{device.tenantDisplayName}</td>
@@ -338,9 +341,9 @@ function DeviceTable({ devices }: { devices: any[] }) {
           ))}
         </tbody>
       </table>
-      {devices.length > 20 && (
+      {devices.length > 0 && (
         <p className="text-center text-text-muted text-sm mt-4">
-          Showing 20 of {devices.length} devices
+          Showing all {devices.length} devices
         </p>
       )}
     </div>

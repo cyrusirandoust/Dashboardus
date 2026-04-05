@@ -49,18 +49,23 @@ export function useDashboardData(): DashboardData {
       setLoading(true);
       setError(null);
 
-      console.info('[Dashboard] Fetching Lighthouse data...');
+      console.info('[Dashboard] Fetching dashboard data...');
 
-      // Only fetch tenants and devices from Lighthouse
-      // Security incidents are not available in Lighthouse for MSPs
-      const [tenantsResult, devicesResult] = await Promise.allSettled([
+      // Fetch tenants, devices, and security incidents
+      const [tenantsResult, devicesResult, incidentsResult] = await Promise.allSettled([
         getManagedTenants(graphClient),
         getManagedDeviceCompliance(graphClient),
+        getSecurityIncidents(graphClient, {
+          status: ['active', 'inProgress'],
+          timeRange: 'last30d',
+          top: 100
+        }),
       ]);
 
       // Extract successful results
       const tenantsData = tenantsResult.status === 'fulfilled' ? tenantsResult.value : [];
       const devicesData = devicesResult.status === 'fulfilled' ? devicesResult.value : [];
+      const incidentsData = incidentsResult.status === 'fulfilled' ? incidentsResult.value : [];
 
       // Log any failures
       if (tenantsResult.status === 'rejected') {
@@ -71,15 +76,24 @@ export function useDashboardData(): DashboardData {
         console.error('[Dashboard] Failed to fetch devices:', devicesResult.reason);
         setError('Failed to fetch device compliance from Lighthouse');
       }
+      if (incidentsResult.status === 'rejected') {
+        console.warn('[Dashboard] Failed to fetch security incidents:', incidentsResult.reason);
+        // Don't set error for incidents - they're optional
+      }
+
+      // Mark new incidents
+      const markedIncidents = markNewIncidents(incidentsData, previousIncidents);
+      setPreviousIncidents(incidentsData);
 
       setTenants(tenantsData);
       setDevices(devicesData);
-      setIncidents([]); // No incidents from Lighthouse
+      setIncidents(markedIncidents);
       setLastUpdated(new Date());
 
-      console.info('[Dashboard] Lighthouse data fetched:', {
+      console.info('[Dashboard] Dashboard data fetched:', {
         tenants: tenantsData.length,
         devices: devicesData.length,
+        incidents: incidentsData.length,
       });
       
       // Debug: Log first device to see actual field names
@@ -91,13 +105,18 @@ export function useDashboardData(): DashboardData {
       if (tenantsData.length > 0) {
         console.log('[Dashboard] Sample tenant data:', tenantsData[0]);
       }
+      
+      // Debug: Log first incident to see actual field names
+      if (incidentsData.length > 0) {
+        console.log('[Dashboard] Sample incident data:', incidentsData[0]);
+      }
     } catch (err: any) {
       console.error('[Dashboard] Unexpected error fetching data:', err);
       setError(err.message || 'Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
-  }, [graphClient]);
+  }, [graphClient, previousIncidents]);
 
   /**
    * Initial data fetch on mount only (no auto-refresh to prevent loops).
@@ -125,7 +144,11 @@ export function useDashboardData(): DashboardData {
         ? Math.round((devices.filter(d => d.complianceStatus === 'compliant').length / devices.length) * 100)
         : 0,
     },
-    incidents: aggregateIncidentsBySeverity(incidents),
+    incidents: {
+      ...aggregateIncidentsBySeverity(incidents),
+      active: incidents.filter(i => i.status === 'active' || i.status === 'inProgress').length,
+      resolved: incidents.filter(i => i.status === 'resolved').length,
+    },
     health: {
       overallStatus: 'healthy',
       tenantsAtRisk: 0,
