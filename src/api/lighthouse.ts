@@ -362,12 +362,135 @@ export function aggregateComplianceByTenant(
   return stats;
 }
 
+/**
+ * Get security alerts from Lighthouse across all managed tenants.
+ *
+ * @param graphClient - Authenticated Graph client
+ * @param filter - Optional OData filter
+ * @returns Array of security alerts
+ */
+export async function getLighthouseSecurityAlerts(
+  graphClient: any,
+  filter?: string
+): Promise<any[]> {
+  try {
+    const hasLighthouse = await isLighthouseAvailable(graphClient);
+    
+    if (!hasLighthouse) {
+      console.warn('[Lighthouse] Security alerts not available without Lighthouse');
+      return [];
+    }
+
+    console.info('[Lighthouse] Fetching security alerts from Lighthouse...');
+    
+    let allAlerts: any[] = [];
+    let nextLink: string | undefined;
+    
+    // Try the Lighthouse security alerts endpoint
+    let request = graphClient
+      .api('/tenantRelationships/managedTenants/managedTenantAlerts')
+      .version('beta')
+      .top(999);
+
+    if (filter) {
+      request = request.filter(filter);
+    }
+
+    // Fetch first page
+    let response: any = await retryWithBackoff(() => request.get());
+    
+    allAlerts = allAlerts.concat(response.value || []);
+    nextLink = response['@odata.nextLink'];
+
+    // Fetch remaining pages if any
+    while (nextLink) {
+      console.info(`[Lighthouse] Fetching next page of alerts...`);
+      response = await retryWithBackoff(() =>
+        graphClient.api(nextLink).get()
+      );
+      allAlerts = allAlerts.concat(response.value || []);
+      nextLink = response['@odata.nextLink'];
+    }
+
+    console.info(`[Lighthouse] Found ${allAlerts.length} security alerts (across all pages)`);
+    return allAlerts;
+  } catch (error: any) {
+    console.error('[Lighthouse] Error fetching security alerts:', error);
+    // Don't throw - alerts are optional
+    console.warn('[Lighthouse] Security alerts endpoint may not be available yet');
+    return [];
+  }
+}
+
+/**
+ * Get security incidents from Lighthouse across all managed tenants.
+ * Note: This endpoint may not be available in all Lighthouse versions.
+ *
+ * @param graphClient - Authenticated Graph client
+ * @param filter - Optional OData filter
+ * @returns Array of security incidents
+ */
+export async function getLighthouseSecurityIncidents(
+  graphClient: any,
+  filter?: string
+): Promise<any[]> {
+  try {
+    const hasLighthouse = await isLighthouseAvailable(graphClient);
+    
+    if (!hasLighthouse) {
+      console.warn('[Lighthouse] Security incidents not available without Lighthouse');
+      return [];
+    }
+
+    console.info('[Lighthouse] Fetching security incidents from Lighthouse...');
+    
+    let allIncidents: any[] = [];
+    let nextLink: string | undefined;
+    
+    // Try the Lighthouse security incidents endpoint
+    let request = graphClient
+      .api('/tenantRelationships/managedTenants/managedTenantSecurityIncidents')
+      .version('beta')
+      .top(999);
+
+    if (filter) {
+      request = request.filter(filter);
+    }
+
+    // Fetch first page
+    let response: any = await retryWithBackoff(() => request.get());
+    
+    allIncidents = allIncidents.concat(response.value || []);
+    nextLink = response['@odata.nextLink'];
+
+    // Fetch remaining pages if any
+    while (nextLink) {
+      console.info(`[Lighthouse] Fetching next page of incidents...`);
+      response = await retryWithBackoff(() =>
+        graphClient.api(nextLink).get()
+      );
+      allIncidents = allIncidents.concat(response.value || []);
+      nextLink = response['@odata.nextLink'];
+    }
+
+    console.info(`[Lighthouse] Found ${allIncidents.length} security incidents (across all pages)`);
+    return allIncidents;
+  } catch (error: any) {
+    console.error('[Lighthouse] Error fetching security incidents:', error);
+    // Don't throw - incidents are optional
+    console.warn('[Lighthouse] Security incidents endpoint may not be available yet');
+    return [];
+  }
+}
+
 export default {
   getManagedTenants,
   getManagedDeviceCompliance,
   getNonCompliantDevices,
   getMyLighthouseRoles,
   aggregateComplianceByTenant,
+  getLighthouseSecurityAlerts,
+  getLighthouseSecurityIncidents,
 };
 
 // Made with Bob

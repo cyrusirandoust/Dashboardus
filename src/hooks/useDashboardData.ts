@@ -7,8 +7,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useGraphClient } from '@/api/graphClient';
-import { getManagedTenants, getManagedDeviceCompliance, aggregateComplianceByTenant } from '@/api/lighthouse';
-import { getSecurityIncidents, markNewIncidents, aggregateIncidentsBySeverity } from '@/api/security';
+import {
+  getManagedTenants,
+  getManagedDeviceCompliance,
+  aggregateComplianceByTenant,
+  getLighthouseSecurityIncidents,
+  getLighthouseSecurityAlerts
+} from '@/api/lighthouse';
+import { markNewIncidents, aggregateIncidentsBySeverity } from '@/api/security';
 import type { ManagedTenant, ManagedDeviceCompliance, SecurityIncident, DashboardSummary } from '@/types';
 
 interface DashboardData {
@@ -51,19 +57,33 @@ export function useDashboardData(): DashboardData {
 
       console.info('[Dashboard] Fetching dashboard data...');
 
-      // Fetch tenants and devices
-      // NOTE: Security incidents API doesn't work through Lighthouse yet
-      // Microsoft doesn't provide a multi-tenant security incidents endpoint via Lighthouse
-      // The /security/incidents endpoint only works for the current tenant, not across managed tenants
-      const [tenantsResult, devicesResult] = await Promise.allSettled([
+      // Fetch tenants, devices, and security incidents from Lighthouse
+      // NOTE: Using Lighthouse API to get multi-tenant security data
+      const [tenantsResult, devicesResult, incidentsResult, alertsResult] = await Promise.allSettled([
         getManagedTenants(graphClient),
         getManagedDeviceCompliance(graphClient),
+        getLighthouseSecurityIncidents(graphClient),
+        getLighthouseSecurityAlerts(graphClient),
       ]);
 
       // Extract successful results
       const tenantsData = tenantsResult.status === 'fulfilled' ? tenantsResult.value : [];
       const devicesData = devicesResult.status === 'fulfilled' ? devicesResult.value : [];
-      const incidentsData: any[] = []; // Disabled until Lighthouse supports multi-tenant incidents
+      const incidentsData = incidentsResult.status === 'fulfilled' ? incidentsResult.value : [];
+      const alertsData = alertsResult.status === 'fulfilled' ? alertsResult.value : [];
+
+      // Combine incidents and alerts into a single incidents array
+      // Alerts can be treated as incidents for display purposes
+      const combinedIncidents = [...incidentsData, ...alertsData.map((alert: any) => ({
+        id: alert.id,
+        displayName: alert.alertDisplayName || alert.title || 'Security Alert',
+        severity: alert.severity || 'medium',
+        status: alert.alertStatus || alert.status || 'active',
+        createdDateTime: alert.createdDateTime || alert.alertCreatedDateTime,
+        lastUpdateDateTime: alert.lastUpdatedDateTime || alert.alertCreatedDateTime,
+        tenantId: alert.tenantId,
+        tenantDisplayName: alert.tenantDisplayName,
+      }))];
 
       // Log any failures
       if (tenantsResult.status === 'rejected') {
@@ -74,12 +94,18 @@ export function useDashboardData(): DashboardData {
         console.error('[Dashboard] Failed to fetch devices:', devicesResult.reason);
         setError('Failed to fetch device compliance from Lighthouse');
       }
-      // Security incidents disabled - Lighthouse doesn't support multi-tenant incidents yet
-      console.info('[Dashboard] Security incidents disabled - not supported by Lighthouse API yet');
+      if (incidentsResult.status === 'rejected') {
+        console.error('[Dashboard] Failed to fetch security incidents:', incidentsResult.reason);
+        console.warn('[Dashboard] Security incidents unavailable from Lighthouse');
+      }
+      if (alertsResult.status === 'rejected') {
+        console.error('[Dashboard] Failed to fetch security alerts:', alertsResult.reason);
+        console.warn('[Dashboard] Security alerts unavailable from Lighthouse');
+      }
 
       // Mark new incidents
-      const markedIncidents = markNewIncidents(incidentsData, previousIncidents);
-      setPreviousIncidents(incidentsData);
+      const markedIncidents = markNewIncidents(combinedIncidents, previousIncidents);
+      setPreviousIncidents(combinedIncidents);
 
       setTenants(tenantsData);
       setDevices(devicesData);
@@ -90,6 +116,8 @@ export function useDashboardData(): DashboardData {
         tenants: tenantsData.length,
         devices: devicesData.length,
         incidents: incidentsData.length,
+        alerts: alertsData.length,
+        combined: combinedIncidents.length,
       });
       
       // Debug: Log first device to see actual field names
@@ -102,9 +130,9 @@ export function useDashboardData(): DashboardData {
         console.log('[Dashboard] Sample tenant data:', tenantsData[0]);
       }
       
-      // Debug: Log first incident to see actual field names
-      if (incidentsData.length > 0) {
-        console.log('[Dashboard] Sample incident data:', incidentsData[0]);
+      // Debug: Log first incident/alert to see actual field names
+      if (combinedIncidents.length > 0) {
+        console.log('[Dashboard] Sample incident/alert data:', combinedIncidents[0]);
       }
     } catch (err: any) {
       console.error('[Dashboard] Unexpected error fetching data:', err);

@@ -329,11 +329,15 @@ function DeviceTable({ devices }: { devices: any[] }) {
               <td className="text-text-secondary text-sm">{formatRelativeTime(device.lastSyncDateTime)}</td>
               <td>
                 <a
-                  href={getLighthouseDeviceLink(device.tenantId, device.tenantDisplayName || device.organizationDisplayName)}
+                  href={getLighthouseDeviceLink(
+                    device.tenantId,
+                    device.tenantDisplayName || device.organizationDisplayName,
+                    device.managedDeviceId
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
-                  title="View devices in Lighthouse for this tenant"
+                  title="View this device in Lighthouse"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>

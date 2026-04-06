@@ -48,16 +48,24 @@ export function getIntuneDeviceLink(deviceId: string): string {
  *
  * @param tenantId - The customer tenant ID
  * @param tenantName - The customer tenant display name
+ * @param deviceId - Optional device ID to highlight specific device
  * @returns URL to device compliance page in Lighthouse filtered to this tenant
  */
-export function getLighthouseDeviceLink(tenantId: string, tenantName: string): string {
+export function getLighthouseDeviceLink(tenantId: string, tenantName: string, deviceId?: string): string {
   // Encode the tenant info as JSON for Lighthouse URL format
   const customerParam = encodeURIComponent(JSON.stringify({
     key: tenantId,
     text: tenantName
   }));
   
-  return `${PORTALS.lighthouse}/#view/Microsoft_Intune_MTM/DeviceCompliance.ReactView/defaultKey/devices/initialCustomer~/${customerParam}`;
+  let url = `${PORTALS.lighthouse}/#view/Microsoft_Intune_MTM/DeviceCompliance.ReactView/defaultKey/devices/initialCustomer~/${customerParam}`;
+  
+  // If device ID provided, add it to the URL (Lighthouse will highlight/filter to this device)
+  if (deviceId) {
+    url += `/deviceId~/${encodeURIComponent(deviceId)}`;
+  }
+  
+  return url;
 }
 
 /**
